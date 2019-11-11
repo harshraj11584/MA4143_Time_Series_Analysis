@@ -30,12 +30,13 @@ summary(ts)
 ts$date<- as.Date(as.character(ts$date),format="%Y%m%d")
 ts$time <- chron(times=as.character(paste(ts$time,rep(":00",length(ts$time)))))
 ts$date_time <-  as.POSIXct(paste(ts$date, ts$time), format="%Y-%m-%d %H:%M:%S")
-ts <- ts[ c("date_time", "close") ]
+ts$points <- ts$close
+ts <- ts[ c("date_time", "points") ]
 ts
 summary(ts)
 
 #plotting the time series
-ggplot(ts,aes(x=date_time,y=close))  + geom_line(color = "#00AFBB", size = 1) 
+ggplot(ts,aes(x=date_time,y=points))  + geom_line(color = "#00AFBB", size = 1) 
 
 
 ```
@@ -46,8 +47,8 @@ ggplot(ts,aes(x=date_time,y=close))  + geom_line(color = "#00AFBB", size = 1)
 
 n<-dim(ts)[1] #number of datapoints
 
-y_baseline_actual <- ts$close[2:n]
-y_baseline_predicted <- ts$close[1:n-1]
+y_baseline_actual <- ts$points[2:n]
+y_baseline_predicted <- ts$points[1:n-1]
 baseline_error <- mae(actual=y_baseline_actual,predicted=y_baseline_predicted)
 baseline_error
 ```
