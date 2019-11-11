@@ -1,0 +1,53 @@
+---
+title: "project_notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(car)
+library(caret)
+library(ggplot2)
+library(chron)
+library(ModelMetrics)
+
+```
+
+```{r}
+
+nse_stocks <- read.csv(file = 'Dataset/nse-stocks-database/banknifty.csv')
+summary(nse_stocks)
+# nse_stocks
+
+```
+
+```{r}
+#want to model the closing points for the data 
+ts <- nse_stocks[ c("date","time", "close" ) ]   
+summary(ts)
+
+#date time conversions 
+ts$date<- as.Date(as.character(ts$date),format="%Y%m%d")
+ts$time <- chron(times=as.character(paste(ts$time,rep(":00",length(ts$time)))))
+ts$date_time <-  as.POSIXct(paste(ts$date, ts$time), format="%Y-%m-%d %H:%M:%S")
+ts <- ts[ c("date_time", "close") ]
+ts
+summary(ts)
+
+#plotting the time series
+ggplot(ts,aes(x=date_time,y=close))  + geom_line(color = "#00AFBB", size = 1) 
+
+
+```
+
+```{r}
+#setting up a baseline model that predicts y(t+1) = y(t)
+#any model that is good must have Mean Abs Error better than this model
+
+n<-dim(ts)[1] #number of datapoints
+
+y_baseline_actual <- ts$close[2:n]
+y_baseline_predicted <- ts$close[1:n-1]
+baseline_error <- mae(actual=y_baseline_actual,predicted=y_baseline_predicted)
+baseline_error
+```
