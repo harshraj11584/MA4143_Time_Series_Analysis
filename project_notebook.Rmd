@@ -17,7 +17,7 @@ library(forecast)
 
 ```{r}
 
-nse_stocks <- read.csv(file = 'Dataset/nse-stocks-database/banknifty.csv')
+nse_stocks <- read.csv(file = 'Dataset/nifty50.csv')
 summary(nse_stocks)
 # nse_stocks
 
@@ -29,16 +29,16 @@ ts <- nse_stocks[ c("date","time", "close" ) ]
 summary(ts) 
 
 #date time conversions 
-ts$date<- as.Date(as.character(ts$date),format="%Y%m%d")
-ts$time <- chron(times=as.character(paste(ts$time,rep(":00",length(ts$time)))))
-ts$date_time <-  as.POSIXct(paste(ts$date, ts$time), format="%Y-%m-%d %H:%M:%S")
+ts$date<- as.Date(as.character(ts$date),format="%Y%m%d") 
+ts$time <- chron(times=as.character(paste(ts$time,rep(":00",length(ts$time))))) 
+ts$date_time <-  as.POSIXct(paste(ts$date, ts$time), format="%Y-%m-%d %H:%M:%S") 
 ts$points <- ts$close
 ts <- ts[ c("date_time", "points") ]
 ts
 summary(ts) 
 #starting point  : 2012-12-03 09:16:00 
-# ending point  : 2016-09-30 15:29:00
-# frequency : every minute
+# ending point  : 2016-09-30 15:29:00 
+# frequency : every minute 
 
 #plotting the time series
 ggplot(ts,aes(x=date_time,y=points))  + geom_line(color = "#00AFBB", size = 1) 
@@ -54,6 +54,7 @@ n<-dim(ts)[1] #number of datapoints - 367575
 
 y_baseline_actual <- ts$points[2:n]
 y_baseline_predicted <- ts$points[1:n-1]
+
 baseline_error <- mae(actual=y_baseline_actual,predicted=y_baseline_predicted)
 baseline_error
 ```
