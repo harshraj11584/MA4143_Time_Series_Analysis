@@ -10,7 +10,9 @@ library(caret)
 library(ggplot2)
 library(chron)
 library(ModelMetrics)
-
+library(uroot)
+library(fUnitRoots)
+library(forecast)
 ```
 
 ```{r}
@@ -24,7 +26,7 @@ summary(nse_stocks)
 ```{r}
 #want to model the closing points for the data 
 ts <- nse_stocks[ c("date","time", "close" ) ]   
-summary(ts)
+summary(ts) 
 
 #date time conversions 
 ts$date<- as.Date(as.character(ts$date),format="%Y%m%d")
@@ -33,7 +35,10 @@ ts$date_time <-  as.POSIXct(paste(ts$date, ts$time), format="%Y-%m-%d %H:%M:%S")
 ts$points <- ts$close
 ts <- ts[ c("date_time", "points") ]
 ts
-summary(ts)
+summary(ts) 
+#starting point  : 2012-12-03 09:16:00 
+# ending point  : 2016-09-30 15:29:00
+# frequency : every minute
 
 #plotting the time series
 ggplot(ts,aes(x=date_time,y=points))  + geom_line(color = "#00AFBB", size = 1) 
@@ -45,10 +50,92 @@ ggplot(ts,aes(x=date_time,y=points))  + geom_line(color = "#00AFBB", size = 1)
 #setting up a baseline model that predicts y(t+1) = y(t)
 #any model that is good must have Mean Abs Error better than this model
 
-n<-dim(ts)[1] #number of datapoints
+n<-dim(ts)[1] #number of datapoints - 367575
 
 y_baseline_actual <- ts$points[2:n]
 y_baseline_predicted <- ts$points[1:n-1]
 baseline_error <- mae(actual=y_baseline_actual,predicted=y_baseline_predicted)
 baseline_error
 ```
+
+```{r}
+plot(ts) # removing time colomn 
+
+ts_updated <- ts[ c("points")]
+ts_updated
+dim(ts_updated)
+
+ts_final = ts_updated[1:50000,]
+
+# starting point  : 2012-12-03 09:16:00 
+# ending point  : 2013-01-18 11:32:00
+# frequency : every minute
+
+plot(ts_final, ylab= "Original Data", type = 'l')
+
+adf.test(ts_final) #non - Stationary
+adfTest(ts_final , type = 'nc')
+
+# Box-Cox transformation
+ts_final.transform = BoxCox.ar(ts_final)
+
+# estimated value of lambda based on MLE
+lambda = ts_final.transform$mle
+lambda
+# transformed TS
+transformed.ts_final<-(ts_final^(lambda)-1)/lambda
+
+plot(transformed.ts_final, type = 'l') # NO Significant improvement
+
+adf.test(transformed.ts_final) # Non - Stationary
+adfTest(transformed.ts_final , type = 'nc') #Non - Stationary
+
+plot(log(ts_final), ylab = 'logarithmData' , type = 'l') # No change
+
+adf.test(log(ts_final)) # Non - Stationary
+adfTest(log(ts_final), type = "nc")
+
+plot(diff(ts_final),ylab='First Difference',type='l') 
+
+adf.test(diff(ts_final)) # P value is less than 0.01 --> Stationary
+adfTest(diff(ts_final), type = 'nc')  # P value is less than 0.01 --> Stationary
+
+stationary_ts <- diff(ts_final)
+
+#Splitting train and test data (forecast data) ?
+
+```
+
+
+```{r}
+# Detcting the order using ACF and PACF plots 
+# Should add EACF ?
+
+acf(diff(ts_final) , ylab =  "Auto Correlation Function") # p=0
+pacf(diff(ts_final) , ylab = "Partial Auto Correlation Function") #q =0
+eacf(diff(ts_final))
+
+
+
+
+```
+
+```{r}
+model1 = arima(ts_final, order = c(0,1,0))
+model1
+model2 = arima(ts_final, order = c(1,1,1))
+model2
+model3 = arima(ts_final, order = c(0,1,1))
+model3
+model4 = arima(ts_final, order = c(1,1,0))
+model4
+model5 = auto.arima(ts_final)
+model5
+
+#Subset Selection Should be done ?
+```
+
+```{r}
+#model checking
+```
+
