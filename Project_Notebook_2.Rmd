@@ -71,7 +71,7 @@ transformed.ts_final<-bcPower(ts,lambda) # transformed TS
 plot(transformed.ts_final, type = 'l',ylab="boxCox transformed") # NO Significant improvement
 adf.test(transformed.ts_final)
 
-#Tring Log Transform
+#Trying Log Transform
 plot(log(ts), ylab = 'logarithmData' , type = 'l') # No change
 
 
@@ -200,5 +200,5 @@ mse(stocks,m3$fitted)
 
 ```
 
-Finding Errors 
+
 
