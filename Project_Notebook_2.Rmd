@@ -59,17 +59,20 @@ Checking for Stationarity
 ```{r}
 
 #Checking Stationarity with lag 1
-adf.test(x=ts , alternative="stationary", k=1)
+adf.test(x=ts , alternative="stationary", k=1) #non stationary
+adfTest(ts) #non stationary
 
 #Checking Stationarity with lag autodetermined
 adf.test(x=ts , alternative="stationary")
+adfTest(ts) #non - stationary
 
 #Trying Box-Cox Transformation for Stationarity
 ts_final.transform = BoxCox.ar(ts)
 lambda = ts_final.transform$mle # estimated value of lambda based on MLE
 transformed.ts_final<-bcPower(ts,lambda) # transformed TS
 plot(transformed.ts_final, type = 'l',ylab="boxCox transformed") # NO Significant improvement
-adf.test(transformed.ts_final)
+adf.test(transformed.ts_final) #Non Stationary
+adfTest(transformed.ts_final) #NOn Stationary
 
 #Trying Log Transform
 plot(log(ts), ylab = 'logarithmData' , type = 'l') # No change
@@ -78,6 +81,7 @@ plot(log(ts), ylab = 'logarithmData' , type = 'l') # No change
 #Trying Differencing
 plot(diff(ts),ylab='First Difference',type='l') 
 adf.test(diff(ts)) #Stationary
+adfTest(diff(ts),type='nc') #Stationary
 
 tss <- diff(ts)
 
@@ -88,8 +92,8 @@ tss <- diff(ts)
 # Detcting the order using ACF and PACF plots 
 # Should add EACF ?
 
-acf(tss, lag.max=15, ylab =  "Auto Correlation Function",ci.type="ma") # suggests p=3
-pacf(tss, lag.max=15, ylab = "Partial Auto Correlation Function") # suggests q=3
+acf(tss, lag.max=15, ylab =  "Auto Correlation Function",ci.type="ma") # suggests q=3
+pacf(tss, lag.max=15, ylab = "Partial Auto Correlation Function") # suggests p=3
 
 eacf(tss, ar.max=15, ma.max=15) #suggesting ARMA(1,2)
 
@@ -129,6 +133,14 @@ qqline(m1$residuals)
 sum((m1$residuals)^2) 
 tsdiag(m1,  gof = 15,omit.initial=F)
 
+# For Ljung-Box Test, p-values > 0.05 => Residuals are Not Correlated
+
+
+```
+
+
+```{r}
+
 # M2 : conditional least squares estimates : 
 m2 <- Arima(ts,order=c(3,1,3),include.mean=TRUE,method="CSS")
 # M2 : maximum likelihood estimates :
@@ -146,6 +158,12 @@ sum((m2$residuals)^2)
 tsdiag(m2,  gof = 15,omit.initial=F)
 
 
+
+```
+
+
+```{r}
+
 # M3 : conditional least squares estimates : 
 m3 <- Arima(ts,order=c(3,1,0),include.mean=TRUE,method="CSS")
 # M3 : maximum likelihood estimates :
@@ -161,20 +179,16 @@ qqline(m3$residuals)
 "Sum of Squares of Residuals for ARIMA(3,1,0) = "
 sum((m3$residuals)^2) 
 tsdiag(m3,  gof = 15,omit.initial=F)
-
-# For Ljung-Box Test, p-values > 0.05 => Residuals are Not Correlated
-
-
 ```
 
 Plotting the Fitted Values Along with the Original Time Series for Each of these Models.
 
 ```{r}
-plot(times,stocks,type='l')
-points(times,m1$fitted,pch='*',col="dark red")
-plot(times,stocks,type='l')
+plot(times,stocks,type='l' , ylab = "model1 - ARIMA(1,1,2)")
+points(times,m1$fitted,pch= "*",col="dark red")
+plot(times,stocks,type='l', ylab = "model2 - ARIMA(3,1,3)")
 points(times,m2$fitted,pch='*',col="dark blue")
-plot(times,stocks,type='l')
+plot(times,stocks,type='l', ylab = "model3 - ARIMA(3,1,0)")
 points(times,m3$fitted,pch='*',col="dark green")
 ```
 
@@ -189,16 +203,25 @@ plot(forecast(m3,level=c(75,95),h=10))
 "For Baseline Model, MSE = "
 baseline_error
 
-"Model 1 MSE"
+"Model 1 MSE "
 mse(stocks,m1$fitted)
 
 "Model 2 MSE"
 mse(stocks,m2$fitted)
 
-"Model 3 MSE"
+"Model 3 MSE "
 mse(stocks,m3$fitted)
 
+"Model 1 AIC "
+m1$aic
+"Model 2 AIC"
+m2$aic
+"Model 3 AIC"
+m3$aic
 ```
 
 
+```{r}
+
+```
 
