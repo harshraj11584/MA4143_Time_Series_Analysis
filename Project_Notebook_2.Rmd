@@ -58,13 +58,9 @@ Checking for Stationarity
 
 ```{r}
 
-#Checking Stationarity with lag 1
-adf.test(x=ts , alternative="stationary") #non stationary
-adfTest(ts) #non stationary
-
 #Checking Stationarity with lag autodetermined
 adf.test(x=ts , alternative="stationary")
-adfTest(ts) #non - stationary
+adfTest(ts,type="nc") #non - stationary
 
 #Trying Box-Cox Transformation for Stationarity
 ts_final.transform = BoxCox.ar(ts)
@@ -72,7 +68,7 @@ lambda = ts_final.transform$mle # estimated value of lambda based on MLE
 transformed.ts_final<-bcPower(ts,lambda) # transformed TS
 plot(transformed.ts_final, type = 'l',ylab="boxCox transformed") # NO Significant improvement
 adf.test(transformed.ts_final) #Non Stationary
-adfTest(transformed.ts_final) #NOn Stationary
+adfTest(transformed.ts_final,type="nc") #NOn Stationary
 
 #Trying Log Transform
 plot(log(ts), ylab = 'logarithmData' , type = 'l') # No change
@@ -208,13 +204,13 @@ Plotting the Fitted Values Along with the Original Time Series for Each of these
 
 ```{r}
 plot(times,stocks,type='l' , ylab = "model1 - ARIMA(1,1,2)")
-points(times,m1$fitted,pch= "*",col="dark red")
+lines(times,m1$fitted,pch= "*",col="dark red")
 plot(times,stocks,type='l', ylab = "model2 - ARIMA(3,1,3)")
-points(times,m2$fitted,pch='*',col="dark blue")
+lines(times,m2$fitted,pch='*',col="dark blue")
 plot(times,stocks,type='l', ylab = "model3 - ARIMA(3,1,0)")
-points(times,m3$fitted,pch='*',col="dark green")
+lines(times,m3$fitted,pch='*',col="dark green")
 plot(times,stocks,type='l', ylab = "model4 - ARIMA(8,1,3)")
-points(times,m4$fitted,pch='*',col="orange")
+lines(times,m4$fitted,pch='*',col="orange")
 ```
 
 Forecasting Using the Model. Finding Mean Square of Residuals and Comparing with Baseline Model 
